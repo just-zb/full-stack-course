@@ -4,6 +4,9 @@ const Person = (props) => {
 }
 const Persons = (props)=>{
     const {persons,personFilter,deletePerson} = props
+    console.log("persons:",persons);
+    console.log(typeof persons);
+    
     return (
         <ul>
         {persons.filter(person => person.name.toLowerCase().includes(personFilter.toLowerCase())).map((person) => <Person key={person.id} person={person} deletePerson={deletePerson} />)}

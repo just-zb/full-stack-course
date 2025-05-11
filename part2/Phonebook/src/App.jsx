@@ -23,8 +23,19 @@ const App = () => {
     }
     personService.create(personObject).then(returnedPerson => {
       setPersons(persons.concat(returnedPerson))
+      console.log("person added",personObject)
+      setMessage(`Added ${newName}`)
+      setTimeout(() => {
+        setMessage(null)
+      }, 5000
+      )
+    }).catch(error => {
+      setMessage('Error'+error.response.data.error)
+      console.log(error.response.data);
+      setTimeout(() => {
+        setMessage(null)
+      }, 5000)
     })
-    console.log("person added",personObject)
   }
   const updatePerson = (id) => {
     const person = persons.find(person => person.id === id)
@@ -32,7 +43,17 @@ const App = () => {
     if (window.confirm(`${newName} is already added to phonebook, replace the old number with a new one?`)) {
       personService.update(id, changedPerson).then(returnedPerson => {
         setPersons(persons.map(person => person.id !== id ? person : returnedPerson))
-      })
+        setMessage(`Updated ${newName}`)
+        setTimeout(() => {
+          setMessage(null)
+        }, 5000
+        )
+      }).catch(error => {
+        setMessage('Error'+error.response.data.error)
+        console.log(error.response.data);
+        setTimeout(() => {
+          setMessage(null)
+        }, 5000)})
     }
   }
   const handlePersonLogic = (event) => {
@@ -40,18 +61,8 @@ const App = () => {
     const person = persons.find(person => person.name === newName)
     if (person) {
       updatePerson(person.id)
-      setMessage(`Updated ${newName}`)
-      setTimeout(() => {
-        setMessage(null)
-      }, 5000
-      )
     } else {
       addPerson()
-      setMessage(`Added ${newName}`)
-      setTimeout(() => {
-        setMessage(null)
-      }, 5000
-      )
     }
     setNewName('')
     setNewNumber('')
@@ -59,7 +70,7 @@ const App = () => {
   const deletePerson = (id) => {
     const person = persons.find(person => person.id === id)
     if (window.confirm(`Delete ${person.name} ?`)) {
-      personService.deletePerson(id).then((response) => {
+      personService.deletePerson(id).then(() => {
         setPersons(persons.filter(person => person.id !== id))
       }).catch(error => {
         console.log(error);
