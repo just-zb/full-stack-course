@@ -4,7 +4,7 @@ const User = require('./models/user')
 const { GraphQLError } = require('graphql')
 const jwt = require('jsonwebtoken')
 const { PubSub } = require('graphql-subscriptions')
-const pubsub = new PubSub()
+const PubNub = new PubSub()
 
 const resolvers = {
     Query: {
@@ -80,8 +80,6 @@ const resolvers = {
                 await foundAuthor.save()
 
                 const newBook = await Book.findById(book.id).populate('author')
-
-                //return book
             } catch (error) {
                 throw new GraphQLError('saving book failed', {
                     extensions: {
@@ -91,7 +89,7 @@ const resolvers = {
                     }
                 })
             }
-            pubsub.publish('BOOK_ADDED', { bookAdded: newBook })
+            await PubNub.publish('BOOK_ADDED', {bookAdded: newBook})
             return book
         },
         editAuthor: async (root, args, context) => {
@@ -145,25 +143,23 @@ const resolvers = {
         login: async (root, args) => {
             const user = await User.findOne({ username: args.username })
 
-            if( !user || args.password != 'numberone' ){
+            if( !user || args.password !== 'secret' ){
                 throw new GraphQLError('wrong credentials', {
                     extensions: {
                         code: 'BAD_USER_INPUT'
                     }
                 })
             }
-
             const userForToken = {
                 username: user.username,
                 id: user._id
             }
-
             return { value: jwt.sign(userForToken, process.env.JWT_SECRET) }
         },
     },
     Subscription: {
         bookAdded: {
-            subscribe: () => pubsub.asyncIterator('BOOK_ADDED')
+            subscribe: () => PubNub.asyncIterator('BOOK_ADDED')
         },
     },
 }

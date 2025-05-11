@@ -2,9 +2,11 @@ import {useState} from "react";
 import Authors from "./components/Authors";
 import Books from "./components/Books";
 import NewBook from "./components/NewBook";
-import LoginForm from "./components/LoginForm.jsx";
+import LoginForm from "./components/LoginForm";
 import { useQuery, useApolloClient, useSubscription } from '@apollo/client'
 import { ALL_AUTHORS, ALL_BOOKS, BOOK_ADDED, USER  } from './queries'
+import Notify from "./components/Notify";
+import Recommend from "./components/Recommand";
 
 const App = () => {
     const [page, setPage] = useState("authors");
@@ -15,23 +17,21 @@ const App = () => {
     const [errorMessage, setErrorMessage] = useState(null)
     const client = useApolloClient()
 
-    useSubscription(BOOK_ADDED, {
-        onData: ({ data, client }) => {
-            console.log(data)
-            const addedBook = data.data.bookAdded
-            try {window.alert(`${addedBook.title} added`)
-                updateCache(client.cache, { query: ALL_BOOKS }, addedBook)}
-            catch {
-                console.log('error')
-            }
+useSubscription(BOOK_ADDED, {
+                onData: ({ data, client }) => {
+                    const addedBook = data.data.bookAdded;
+                    try {
+                        window.alert(`${addedBook.title} added`);
+                        updateCache(client.cache, { query: ALL_BOOKS }, addedBook);
+                    } catch (error) {
+                        console.error('Error updating cache:', error);
+                    }
 
-            client.cache.updateQuery({ query: ALL_BOOKS }, ({allBooks }) => {
-                return {
-                    allBooks: allBooks.concat(addedBook),
+                    client.cache.updateQuery({ query: ALL_BOOKS }, ({ allBooks }) => ({
+                        allBooks: [...allBooks, addedBook],
+                    }));
                 }
-            })
-        }
-    })
+            });
     const logout = () => {
         setToken(null)
         localStorage.clear()
@@ -78,13 +78,25 @@ const App = () => {
 };
 
 export const updateCache = (cache, query, addedBook) => {
-    const uniqByTitle = (a) => {
-        let seen = new Set()
-        return a.filter((item) => {
-            let k = item.title
-            return seen.has(k) ? false : seen.add(k)
-        })
-    }
+    /**
+     * Filters an array of books to remove duplicates based on their titles
+     * @param {Array<{title: string}>} books - Array of book objects
+     * @returns {Array<{title: string}>} - Array of books with unique titles
+     */
+    const uniqByTitle = function(books) {
+        const seenTitles = new Set();
+
+        return books.filter((book) => {
+            const title = book.title;
+            const isUnique = !seenTitles.has(title);
+
+            if (isUnique) {
+                seenTitles.add(title);
+            }
+
+            return isUnique;
+        });
+    };
 
     cache.updateQuery(query, ({ allBooks }) => {
         return {
