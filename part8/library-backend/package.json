@@ -1,0 +1,29 @@
+{
+  "name": "library-backend",
+  "version": "1.0.0",
+  "main": "index.js",
+    "type": "commonjs",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js",
+    "build:ui": "rm -rf dist && cd ../library-frontend && npm run build && cp -r dist ../library-backend"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@apollo/server": "^4.7.1",
+    "@graphql-tools/schema": "^10.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.1.4",
+    "express": "^4.18.2",
+    "graphql": "^16.6.0",
+    "graphql-subscriptions": "^2.0.0",
+    "graphql-ws": "^5.13.1",
+    "jsonwebtoken": "^9.0.0",
+    "mongoose": "^7.2.2",
+    "mongoose-unique-validator": "^4.0.0",
+    "ws": "^8.13.0"
+  }
+}
